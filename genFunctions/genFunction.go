@@ -13,36 +13,35 @@ import (
 )
 
 func CreateStudent(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	res.Header().Add("Content-Type", "application/json")
 	newStudent := studentModel.Student{}
 	json.NewDecoder(req.Body).Decode(&newStudent)
-	insertQuery := fmt.Sprintf("insert into students(name,age) values('%v', '%v')", newStudent.Name, newStudent.Age)
+	insertQuery := fmt.Sprintf("insert into students( firstName, lastName, email, gender, age) values('%v', '%v', '%v', '%v', '%v' )", newStudent.FirstName, newStudent.LastName, newStudent.Email, newStudent.Gender, int(newStudent.Age))
 	result, err := connection.Db.Exec(insertQuery)
 	HandleErr(err)
 	lid, err := result.LastInsertId()
-
 	HandleErr(err)
 	fmt.Println("insert result >", lid)
 	newStudent.Id = lid
-	json.NewEncoder(res).Encode(newStudent)
 
 }
 
 func UpdateStudent(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	res.Header().Add("Content-Type", "application/json")
 	id, _ := strconv.Atoi(params[0].Value)
 	student := studentModel.Student{}
 	json.NewDecoder(req.Body).Decode(&student)
-	rows, err := studentDao.UpdateOneFromDb(student.Name, student.Age, int64(id))
+	rows, err := studentDao.UpdateOneFromDb(student.FirstName, student.LastName, student.Email, student.Gender, student.Age, int64(id))
 	HandleErr(err)
 	students := []studentModel.Student{}
 	for rows.Next() {
 		var id int64
-		var name string
+		var firstName string
+		var lastName string
+		var email string
+		var gender string
 		var age int
-		err := rows.Scan(&id, &name, &age)
+		err := rows.Scan(&id, &firstName, &age, &lastName, &email, &gender)
 		HandleErr(err)
-		updatedStudent := studentModel.Student{id, name, age}
+		updatedStudent := studentModel.Student{id, firstName, lastName, email, gender, age}
 		students = append(students, updatedStudent)
 
 	}
@@ -54,19 +53,20 @@ func UpdateStudent(res http.ResponseWriter, req *http.Request, params httprouter
 }
 
 func DeleteStudent(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	res.Header().Add("Content-Type", "application/json")
 	id, _ := strconv.Atoi(params[0].Value)
-
 	rows, err := studentDao.DeleteOneFromDb(int64(id))
 	HandleErr(err)
 	students := []studentModel.Student{}
 	for rows.Next() {
 		var id int64
-		var name string
+		var firstName string
+		var lastName string
+		var email string
+		var gender string
 		var age int
-		err := rows.Scan(&id, &name, &age)
+		err := rows.Scan(&id, &firstName, &age, &lastName, &email, &gender)
 		HandleErr(err)
-		deletedStudent := studentModel.Student{id, name, age}
+		deletedStudent := studentModel.Student{id, firstName, lastName, email, gender, age}
 		students = append(students, deletedStudent)
 	}
 	err1 := json.NewEncoder(res).Encode(students)
@@ -75,20 +75,20 @@ func DeleteStudent(res http.ResponseWriter, req *http.Request, params httprouter
 }
 
 func FetchById(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	res.Header().Add("Content-Type", "application/json")
-
 	id, _ := strconv.Atoi(params[0].Value)
-
 	rows, err := studentDao.DeleteOneFromDb(int64(id))
 	HandleErr(err)
 	students := []studentModel.Student{}
 	for rows.Next() {
 		var id int64
-		var name string
+		var firstName string
+		var lastName string
+		var email string
+		var gender string
 		var age int
-		err := rows.Scan(&id, &name, &age)
+		err := rows.Scan(&id, &firstName, &age, &lastName, &email, &gender)
 		HandleErr(err)
-		newStudent := studentModel.Student{id, name, age}
+		newStudent := studentModel.Student{id, firstName, lastName, email, gender, age}
 		students = append(students, newStudent)
 	}
 	err1 := json.NewEncoder(res).Encode(students)
@@ -97,20 +97,23 @@ func FetchById(res http.ResponseWriter, req *http.Request, params httprouter.Par
 }
 
 func FetchAll(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-	res.Header().Add("Content-Type", "application/json")
 	rows, err := studentDao.FetchAllFromDb()
 	HandleErr(err)
 	students := []studentModel.Student{}
 	for rows.Next() {
 		var id int64
-		var name string
+		var firstName string
+		var lastName string
+		var email string
+		var gender string
 		var age int
-		err := rows.Scan(&id, &name, &age)
+		err := rows.Scan(&id, &firstName, &lastName, &email, &gender, &age)
 		HandleErr(err)
-		newStudent := studentModel.Student{id, name, age}
+		newStudent := studentModel.Student{id, firstName, lastName, email, gender, age}
 		students = append(students, newStudent)
 	}
 	err1 := json.NewEncoder(res).Encode(students)
+
 	HandleErr(err1)
 
 }
