@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	studentModel "github.com/umarrg/go_crud/model"
+	"github.com/umarrg/go_crud/myError"
 )
 
 var Db *sql.DB
@@ -12,15 +13,9 @@ var Db *sql.DB
 func init() {
 	var err error
 	Db, err = sql.Open("sqlite3", "./store.db3")
-	HandleErr(err)
+	myError.HandleErr(err)
 
 	res, err := Db.Exec(studentModel.CreateTableQuery)
-	HandleErr(err)
+	myError.HandleErr(err)
 	fmt.Println(res)
-}
-
-func HandleErr(err error) {
-	if err != nil {
-		fmt.Println(err)
-	}
 }
